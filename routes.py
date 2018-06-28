@@ -1,10 +1,12 @@
-from flask import Flask, request, render_template, make_response
+from flask import Flask, request, render_template, make_response,session, escape, redirect, url_for
 import json
+
 
 from databaseHelper import authHelpers
 from validation import is_email_valid, is_password_valid, is_username_valid, is_retypepass_valid
 
 app = Flask(__name__)
+app.secret_key = "super secret key"
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signupHandler():
@@ -13,6 +15,7 @@ def signupHandler():
 		email = request.form.get("email")
 		password_hash = request.form.get("password")
 		retypepass = request.form.get("retypePassword")
+		session['name'] = request.form['username']
 		
 		emailCheckUp = is_email_valid( email )
 		passCheckUp = is_password_valid(password_hash)
@@ -66,6 +69,8 @@ def signinHandler():
 	else:
 		email = request.form.get("email")
 		password_hash = request.form.get("password")
+		session['name'] = request.form.get('username')
+		print(session['name'])
 
 		emailCheckUp = is_email_valid( email )
 		passCheckUp = is_password_valid(password_hash)
@@ -87,11 +92,11 @@ def signinHandler():
 												})
 		else:
 			databaseResponse = authHelpers.signin(email, password_hash)
-			if( databaseResponse.meta_data && databaseResponse.meta_data.cookie_data ):
+			if( databaseResponse.meta_data and databaseResponse.meta_data.cookie_data ):
 				resp = make_response(json.dumps( databaseResponse ))
-		    resp.set_cookie('cookie_data', databaseResponse.meta_data.cookie_data)
+				resp.set_cookie('cookie_data', databaseResponse.meta_data.cookie_data)
 				return resp
-		  else:
+			else:
 				return json.dumps({
 														'payload': {},
 														'status': {
@@ -99,6 +104,21 @@ def signinHandler():
 																				'message': 'Not logged in.. idk why'
 																			}
 													})
+
+@app.route('/')
+def index():
+  if 'name' in session:
+    return 'Hey, {}!'.format(escape(session['name']))
+  return 'You are not signed in!'
+
+
+
+@app.route('/signout')
+def signoutHandler():
+	print(session)
+	session.pop('name')
+	return redirect(url_for('index'))
+
 		  	
 
 if __name__ == "__main__":

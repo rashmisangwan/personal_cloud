@@ -51,7 +51,7 @@ class authHelpers:
 			}
 
 
-	def signin(name, email, password):
+	def signin(email, password):
 		try:
 			user_check_email_query = "select * from user_auth where email = '" +email+ "'"
 			c.execute(user_check_email_query)
@@ -75,11 +75,11 @@ class authHelpers:
 						'payload': {},
 						'metadata': {
 							'cookie_code': cookie_code
-						}
+						 },
 						'status': {
 							'code': 200,
 							'message': 'logged in Successfully'
-						}
+						 }
 					}
 				else:
 					return {
