@@ -95,7 +95,8 @@ class authHelpers:
 						}
 					}
 
-		except:
+		except Exception as e:
+			print(e)
 			return {
 				'payload': {},
 				'status': {
@@ -103,9 +104,22 @@ class authHelpers:
 					'message': 'Database Error'
 				}
 			}
+	
+	def getUserId(email):
+		query = "SELECT user_id FROM user_auth WHERE email = '" + email + "'"
+		c.execute(query)
+		user_id = c.fetchall()
 
+		if len(user_id) > 0 and len(user_id[0]) > 0:
+			return user_id[0][0]
+		else:
+			return -1
 
+	def getUserData(email):
+		user_id = authHelpers.getUserId(email)
 
-
-
-				 
+		r = [
+			[1,2,43,435,45,4]
+		]
+		a = r[0]
+		return a

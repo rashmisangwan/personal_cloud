@@ -1,5 +1,6 @@
-from flask import Flask, request, render_template, make_response,session, escape, redirect, url_for
+from flask import Flask, request, render_template, make_response, session, escape, redirect, url_for
 import json
+from werkzeug import secure_filename
 
 
 from databaseHelper import authHelpers
@@ -97,7 +98,7 @@ def signinHandler():
 		else:
 			databaseResponse = authHelpers.signin(email, password_hash)
 			session['user'] = email
-			return databaseResponse
+			return json.dumps(databaseResponse)
 
 @app.route('/')
 def index():
@@ -105,12 +106,32 @@ def index():
     return 'Hey, {}!'.format(escape(session['user']))
   return 'You are not signed in!'
 
-
-
 @app.route('/signout')
 def signoutHandler():
 	session.pop('user')
 	return redirect(url_for('index'))
+
+
+@app.route('/profile', methods = ['GET', 'POST'])
+def profileHandler():
+	if request.method == 'GET':
+		response = authHelpers.getUserData(session['user'])
+		return render_template('profile.html', data=response)
+	else:
+		return('edited informationx')
+
+
+
+@app.route('/upload')
+def upload_file():
+	return render_template('upload.html')
+
+@app.route('/uploader', methods = ['GET', 'POST'])
+def uploader_file():
+	if request.method == 'POST':
+		f = request.file['file']
+		f.save(secure_filename(f.filename))
+		return 'file uploaded successfully'
 
 		  	
 
